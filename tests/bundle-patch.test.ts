@@ -5,12 +5,11 @@ import { describe, expect, it } from 'vitest'
 
 interface JavaScriptExpression { readonly __jsExpr: string }
 
-const jsExpressionType = new yaml.Type('tag:yaml.org,2002:js', {
-  kind: 'scalar',
-  resolve: data => typeof data === 'string',
-  construct: data => ({ __jsExpr: data as string }),
+const jsExpressionType = yaml.defineScalarTag<JavaScriptExpression>('tag:yaml.org,2002:js', {
+  resolve: source => ({ __jsExpr: source }),
+  identify: () => false,
 })
-const schema = yaml.JSON_SCHEMA.extend(jsExpressionType)
+const schema = yaml.JSON_SCHEMA.withTags(jsExpressionType)
 const source = readFileSync(resolve(import.meta.dirname, '..', 'cordis.patch.yml'), 'utf8')
 
 function record(value: unknown): Record<string, unknown> {

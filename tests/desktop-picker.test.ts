@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { Context, Service } from '@deepseek-ai/cordis'
-import { applyEntryPatches, entryListSchema, type PatchOptions } from '@deepseek-ai/cordis-plugin-include'
+import { applyEntryPatches, type PatchOptions } from '@deepseek-ai/cordis-plugin-include'
 import { Loader, type EntryOptions } from '@deepseek-ai/cordis-plugin-loader'
 import * as yaml from 'js-yaml'
 import { describe, expect, it, vi } from 'vitest'
@@ -11,6 +11,12 @@ const browseHost = '@deepseek-ai/dsh-host-directory-picker-browse'
 const browseSurface = '@deepseek-ai/dsh-client-ui-directory-picker-browse'
 const platforms = ['win32', 'darwin', 'linux'] as const
 type Platform = typeof platforms[number]
+
+const jsExpressionType = yaml.defineScalarTag('tag:yaml.org,2002:js', {
+  resolve: source => ({ __jsExpr: source }),
+  identify: () => false,
+})
+const entryListSchema = yaml.JSON_SCHEMA.withTags(jsExpressionType)
 
 const mobilePatches = yaml.load(
   readFileSync(resolve(import.meta.dirname, '..', 'cordis.patch.yml'), 'utf8'),
